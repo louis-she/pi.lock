@@ -31,7 +31,7 @@ export async function prepareMcp(root: string, workspace: string, env: Record<st
     for (const [name, server] of Object.entries<any>(cfg.mcpServers ?? {})) {
       if (server.enabled === false || server.exposure === "hidden") continue;
       if (server.oauth || server.auth) fail("UNSUPPORTED_MCP_AUTH", `${name}: supply an explicit HTTP Authorization environment binding; global Pi OAuth is never loaded.`);
-      const client = new McpClient({ name: "pi-lock", version: "0.1.0", requestTimeoutMs: server.timeout ?? 10000,
+      const client = new McpClient({ name: "pi-lock", version: "0.1.1", requestTimeoutMs: server.timeout ?? 10000,
         roots: [{ uri: pathToFileURL(workspace).href, name: "workspace" }] });
       clients.set(name, client);
       if (server.command) {

@@ -2,8 +2,8 @@
   "lockfileVersion": 1,
   "runtime": {
     "pi": "1.3.0",
-    "adapter": "0.1.0",
-    "sha256": "520bac3e629baaab0dfe574748ed7b51a0336c4bedfddf1f26d72017c30db8b6"
+    "adapter": "0.1.1",
+    "sha256": "5d2e339af86541a51ca58a6401073124bf065d3d764d41e3e656ba2177ed6875"
   },
   "definition": {
     "settings": {
@@ -114,7 +114,7 @@
     "provider": "pi-lock-demo",
     "baseUrl": "http://localhost:0"
   },
-  "agentDigest": "cec6d2a2be2ab8d132099b5da356cd32b49cf68983248c5c328e53cd61e12500",
+  "agentDigest": "938ac05ba54d141d38586da634bee203f863b6e5c6e9d4f26b3cf6902e51e1f1",
   "effective": {
     "model": {
       "id": "demo",

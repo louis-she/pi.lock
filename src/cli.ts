@@ -30,7 +30,7 @@ const help = `pi-lock — Pi ${PI_VERSION}, project-local and reproducible
 async function main() {
   const args = process.argv.slice(2);
   if (args.includes("--help") || args.includes("-h")) { console.log(help); return; }
-  if (args.includes("--version") || args.includes("-v")) { console.log(`pi-lock 0.1.0 (Pi ${PI_VERSION})`); return; }
+  if (args.includes("--version") || args.includes("-v")) { console.log(`pi-lock 0.1.1 (Pi ${PI_VERSION})`); return; }
   const commands = new Set(["init", "lock", "inspect", "verify", "sync"]);
   let command = commands.has(args[0]) ? args.shift()! : "run";
   const flags: Record<string, string | boolean> = {};

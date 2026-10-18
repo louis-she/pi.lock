@@ -273,7 +273,7 @@ function locatePackage(from: string, name: string, root: string): string | undef
 // Hash the actual shipped runtime closure, not just its mutable package version string.
 let runtimeHash: string | undefined;
 export function runtimeIdentity(): { pi: string; adapter: string; sha256: string } {
-  if (runtimeHash) return { pi: PI_VERSION, adapter: "0.1.0", sha256: runtimeHash };
+  if (runtimeHash) return { pi: PI_VERSION, adapter: "0.1.1", sha256: runtimeHash };
   const require = createRequire(import.meta.url);
   const packages = new Map<string, string>();
   const hostRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -306,5 +306,5 @@ export function runtimeIdentity(): { pi: string; adapter: string; sha256: string
     add(entry);
   }
   runtimeHash = digest(identities.sort((a: any, b: any) => a.name.localeCompare(b.name, "en") || a.version.localeCompare(b.version, "en")));
-  return { pi: PI_VERSION, adapter: "0.1.0", sha256: runtimeHash };
+  return { pi: PI_VERSION, adapter: "0.1.1", sha256: runtimeHash };
 }
