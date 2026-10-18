@@ -4,7 +4,7 @@ Use the same Pi agent from a local terminal, RPC, or the SDK with the same confi
 
 Supported Pi version: **1.3.0** (verified as the npm `latest` release on 2026-10-18). Requires Node.js **22.19.0+**.
 
-pi.lock uses Pi's native `.pi/settings.json`, `SYSTEM.md`, `extensions/`, `skills/`, `prompts/`, TUI, and RPC protocol. The main addition is `pi-lock lock`, which captures a tuned agent. Use the project-local `pi-lock` command in place of `pi`; import `createAgentSession` from `pi-lock` in the SDK.
+pi.lock uses Pi's native `.pi/settings.json`, `SYSTEM.md`, `extensions/`, `skills/`, `prompts/`, TUI, and RPC protocol. The main addition is `pi-lock lock`, which captures a tuned agent. Use the project-local `pi-lock` command in place of `pi`; import `createAgentSession` from `pi.lock` in the SDK.
 
 ## Name and package
 
@@ -14,10 +14,11 @@ The project is named **pi.lock**. One npm package provides both its CLI and SDK:
 |---|---|
 | Project name | pi.lock |
 | Agent lockfile | `pi.lock` |
-| npm package, CLI command, SDK import | `pi-lock` |
+| npm package and SDK import | `pi.lock` |
+| CLI command | `pi-lock` |
 | Local snapshots, credentials, and sessions | `.pi-lock/` (excluded from Git) |
 
-The current version is `0.1.0` and has not been published to npm. Install the provided `.tgz` package. `package.json` keeps `private: true` to prevent accidental publication; this does not prevent local packing or installation. Before publishing, verify package-name availability, add a license and repository metadata, and then remove the publication guard.
+The current version is `0.1.0`. Install the published package with `npm install pi.lock`. The CLI command remains `pi-lock`.
 
 ## Try it without an API key
 
@@ -35,10 +36,10 @@ The last command opens Pi's native TUI. The demo uses a deterministic local prov
 
 ## Use it in your project
 
-Install the provided npm package as a project dependency (this project has not yet been published to npm):
+Install the npm package as a project dependency:
 
 ```sh
-npm install /absolute/path/pi-lock-0.1.0.tgz
+npm install pi.lock
 npx --no-install pi-lock init --provider deepseek --model deepseek-chat
 ```
 
@@ -66,7 +67,7 @@ Frozen mode is the default. Changes to files, missing dependencies, model change
 ## SDK: the same agent
 
 ```ts
-import { createAgentSession } from "pi-lock";
+import { createAgentSession } from "pi.lock";
 
 const agent = await createAgentSession({
   projectRoot: "/app/my-agent", // Contains .pi/ and pi.lock
@@ -90,7 +91,7 @@ The returned `session` is Pi's `AgentSession`, with native streaming events, can
 To manage history yourself, pass Pi's native `SessionManager`:
 
 ```ts
-import { createAgentSession, SessionManager } from "pi-lock";
+import { createAgentSession, SessionManager } from "pi.lock";
 
 const agent = await createAgentSession({
   projectRoot: "/app/my-agent",

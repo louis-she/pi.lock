@@ -15,7 +15,7 @@ export interface Definition {
   dependencies: Array<{ path: string; name: string; version: string; integrity?: string }>;
   modelConfig: Record<string, any>;
 }
-const HOST = /^(?:@(?:earendil-works|mariozechner)\/(?:pi-ai(?:\/.*)?|pi-agent-core|pi-coding-agent|pi-tui)|(?:@sinclair\/)?typebox(?:\/.*)?|pi-lock)$/;
+const HOST = /^(?:@(?:earendil-works|mariozechner)\/(?:pi-ai(?:\/.*)?|pi-agent-core|pi-coding-agent|pi-tui)|(?:@sinclair\/)?typebox(?:\/.*)?|pi\.lock)$/;
 const OMIT = new Set(["node_modules", ".git", ".pi-lock", ".DS_Store"]);
 
 function directories(root: string, path: string): string[] {

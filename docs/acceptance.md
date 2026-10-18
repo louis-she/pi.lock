@@ -1,8 +1,8 @@
 # pi.lock Acceptance Report
 
-Acceptance date: 2026-10-18 (Asia/Shanghai). Project: pi.lock; npm package: `pi-lock@0.1.0`. Supported Pi version: **1.3.0**.
+Acceptance date: 2026-10-18 (Asia/Shanghai). Project and npm package: `pi.lock@0.1.0`. Supported Pi version: **1.3.0**.
 
-The naming change updated documentation only; the runtime code is the same as the version covered by the test results below. Tests were not rerun solely for this documentation change.
+The package identifier and SDK self-reference were updated for publication as `pi.lock`; the CLI command remains `pi-lock`.
 
 ## Results
 

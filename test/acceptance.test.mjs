@@ -479,7 +479,7 @@ test("packed npm release installs into a clean app and runs an unchanged Agent l
   execFileSync("npm", ["install", "--save-exact", "--ignore-scripts", "--no-audit", "--no-fund", resolve(destination, result.filename)], { cwd: app, encoding: "utf8" });
   const agent = resolve(app, "agent"); mkdirSync(agent);
   cpSync(resolve(root, ".pi"), resolve(agent, ".pi"), { recursive: true }); cpSync(resolve(root, "pi.lock"), resolve(agent, "pi.lock"));
-  const binary = resolve(app, "node_modules/pi-lock/dist/cli.js");
+  const binary = resolve(app, "node_modules/pi.lock/dist/cli.js");
   const verified = execFileSync(process.execPath, [binary, "--project", agent, "verify"], { cwd: app, encoding: "utf8" });
   assert.match(verified, new RegExp(lock.agentDigest));
   const answer = execFileSync(process.execPath, [binary, "--project", agent, "-p", "/hello", "--no-session"], { cwd: app, encoding: "utf8" });

@@ -1,6 +1,6 @@
 # pi.lock architecture
 
-The project is named **pi.lock**. Its npm package, CLI command and SDK import remain `pi-lock`; the Agent lockfile is `pi.lock`, and local runtime state lives in `.pi-lock/`. These package and runtime identifiers are stable across the display-name change.
+The project and npm package are named **pi.lock**. The CLI command remains `pi-lock`; the SDK imports from `pi.lock`; the Agent lockfile is also `pi.lock`; local runtime state lives in `.pi-lock/`.
 
 ## One construction path
 

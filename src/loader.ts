@@ -27,7 +27,7 @@ export class LockedResourceLoader implements ResourceLoader {
       for (const name of ["builtin:codemode", "builtin:tool_search"]) if (!paths.includes(name) && !this.definition.settings.extensions?.includes(`-${name}`)) paths.push(name);
     }
     const alias: Record<string, string> = {};
-    alias["pi-lock"] = fileURLToPath(new URL("./index.js", import.meta.url));
+    alias["pi.lock"] = fileURLToPath(new URL("./index.js", import.meta.url));
     for (const name of ["@earendil-works/pi-coding-agent", "@earendil-works/pi-agent-core", "@earendil-works/pi-tui", "typebox", "typebox/compile", "typebox/value"]) alias[name] = fileURLToPath(import.meta.resolve(name));
     for (const sub of ["", "/compat", "/oauth", "/providers/all"]) alias[`@earendil-works/pi-ai${sub}`] = fileURLToPath(import.meta.resolve(`@earendil-works/pi-ai${sub || "/compat"}`));
     for (const [key, value] of Object.entries({ ...alias })) if (key.startsWith("@earendil-works/")) alias[key.replace("@earendil-works/", "@mariozechner/")] = value;
