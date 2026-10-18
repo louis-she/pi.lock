@@ -16,10 +16,11 @@ export function lockDigest(lock: Omit<AgentLock, "agentDigest"> | AgentLock): st
   const { agentDigest: _, ...content } = lock as AgentLock;
   return digest(content);
 }
-export async function draftLock(root: string): Promise<AgentLock> {
-  const definition = readDefinition(root);
+export async function draftLock(root: string, allowUnselectedModel = false): Promise<AgentLock> {
+  const definition = readDefinition(root, allowUnselectedModel);
   const runtime = await modelRuntime(definition, { env: {} });
-  const model = modelIdentity(selectedModel(runtime, definition));
+  const selected = selectedModel(runtime, definition, allowUnselectedModel);
+  const model = selected ? modelIdentity(selected) : null;
   const content = { lockfileVersion: FORMAT as 1, runtime: runtimeIdentity(), definition, model };
   return { ...content, agentDigest: lockDigest(content) };
 }

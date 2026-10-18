@@ -23,14 +23,15 @@ export function keyBinding(def: Definition): string {
 export async function modelRuntime(def: Definition, options: CredentialsOptions = {}, development = false): Promise<ModelRuntime> {
   const provider = def.settings.defaultProvider;
   const credentials = options.credentials ?? new InMemoryCredentialStore();
-  const key = options.apiKey ?? (options.env ?? process.env)[keyBinding(def)];
-  if (key) await credentials.modify(provider, async () => ({ type: "api_key", key }));
+  if (options.apiKey && !provider) fail("MODEL_PROVIDER_REQUIRED", "Set a provider before injecting a single apiKey, or use named provider credentials in dev mode.");
+  const key = provider ? options.apiKey ?? (options.env ?? process.env)[keyBinding(def)] : undefined;
+  if (key && provider) await credentials.modify(provider, async () => ({ type: "api_key", key }));
   const runtime = await ModelRuntime.create({ credentials, modelsPath: null, modelsStore: new InMemoryModelsStore(), refreshOnCreate: false, allowModelNetwork: false });
   for (const [id, config] of Object.entries<any>(def.modelConfig.providers ?? {})) {
     runtime.registerProvider(id, { ...config, apiKey: undefined });
   }
   const keys = new Map<string, string>();
-  if (key) keys.set(provider, key);
+  if (key && provider) keys.set(provider, key);
   if (development) for (const entry of runtime.getProviders()) {
     if (entry.id === provider) continue;
     const binding = keyBinding({ ...def, settings: { ...def.settings, defaultProvider: entry.id } });
@@ -57,12 +58,13 @@ export async function modelRuntime(def: Definition, options: CredentialsOptions 
   };
   return runtime;
 }
-export function selectedModel(runtime: ModelRuntime, def: Definition) {
+export function selectedModel(runtime: ModelRuntime, def: Definition, allowUnselected = false) {
+  if (allowUnselected && (!def.settings.defaultProvider || !def.settings.defaultModel)) return undefined;
   const model = runtime.getModel(def.settings.defaultProvider, def.settings.defaultModel);
   if (!model) fail("MODEL_NOT_FOUND", `Model ${def.settings.defaultProvider}/${def.settings.defaultModel} is not in Pi 1.3.0 or local .pi/models.json. No fallback model will be selected.`);
   return model;
 }
-export function modelIdentity(model: unknown): unknown { return JSON.parse(JSON.stringify(model)); }
+export function modelIdentity(model: unknown): unknown { return model == null ? model : JSON.parse(JSON.stringify(model)); }
 export function assertModel(actual: unknown, expected: unknown): void {
   if (digest(modelIdentity(actual)) !== digest(expected)) fail("MODEL_DRIFT", "The loaded model definition differs from pi.lock. Re-lock intentionally after reviewing the change.");
 }

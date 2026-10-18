@@ -105,7 +105,7 @@ export async function createLockedRuntime(options: LockedSessionOptions = {}, pr
   assertEngine();
   const cwd = realpathSync(resolve(options.cwd ?? process.cwd()));
   const projectRoot = findProject(cwd, options.projectRoot);
-  let lock = prepared ?? (options.dev ? await draftLock(projectRoot) : readLock(projectRoot));
+  let lock = prepared ?? (options.dev ? await draftLock(projectRoot, true) : readLock(projectRoot));
   if (!options.dev) verifyDefinition(projectRoot, lock);
   let releaseRoot = materialize(projectRoot, lock);
   const stateDir = resolve(options.sessionDir ?? resolve(projectRoot, ".pi-lock/state/sessions", lock.agentDigest, digest(cwd).slice(0, 12)));
@@ -119,18 +119,22 @@ export async function createLockedRuntime(options: LockedSessionOptions = {}, pr
     pinSession(input.sessionManager, lock, Boolean(options.dev));
     const settings = options.dev ? developmentSettings(projectRoot) : lockedSettings(lock.definition.settings, true);
     const models = await modelRuntime(lock.definition, options, Boolean(options.dev));
-    const model = selectedModel(models, lock.definition);
-    assertModel(model, lock.model);
+    const model = selectedModel(models, lock.definition, Boolean(options.dev));
+    if (!options.dev) assertModel(model, lock.model);
     const loader = new LockedResourceLoader(releaseRoot, input.cwd, lock.definition, options.env, (lock.effective as any)?.mcp);
     await loader.reload();
     let result: Awaited<ReturnType<typeof createPiSession>>;
     try { result = await createPiSession({ cwd: input.cwd, agentDir,
       modelRuntime: models, model, thinkingLevel: lock.definition.settings.defaultThinkingLevel,
-      scopedModels: options.dev ? undefined : [{ model, thinkingLevel: lock.definition.settings.defaultThinkingLevel ?? "medium" }],
+      scopedModels: options.dev ? undefined : [{ model: model!, thinkingLevel: lock.definition.settings.defaultThinkingLevel ?? "medium" }],
       resourceLoader: loader, settingsManager: settings, sessionManager: input.sessionManager,
       sessionStartEvent: input.sessionStartEvent,
     }); } catch (error) { await loader.mcp?.close(); throw error; }
     const session = result.session;
+    if (options.dev && (!settings.getDefaultProvider() || !settings.getDefaultModel())) {
+      const setModel = session.setModel.bind(session);
+      session.setModel = (async (next, opts = {}) => setModel(next, { ...opts, persist: true })) as AgentSession["setModel"];
+    }
     if (options.dev) await models.refresh({ allowNetwork: false });
     const errors: string[] = [];
     const originalBind = session.bindExtensions.bind(session);
@@ -141,7 +145,8 @@ export async function createLockedRuntime(options: LockedSessionOptions = {}, pr
       if (!options.dev) assertModel(session.model, lock.model);
       const effective = effectiveConfiguration(session, releaseRoot, input.cwd, lock);
       if (initial && lock.effective && !options.dev && digest(effective) !== digest(lock.effective)) fail("EFFECTIVE_CONFIG_DRIFT", "Actual model, prompt, tools, or extensions differ from pi.lock. Mode-dependent extension initialization is not portable.");
-      lastInspection = { agentDigest: lock.agentDigest, effectiveDigest: digest(effective), frozen: !options.dev, pi: lock.runtime.pi, credentialEnvironment: keyBinding(lock.definition), configuration: effective };
+      lastInspection = { agentDigest: lock.agentDigest, effectiveDigest: digest(effective), frozen: !options.dev, pi: lock.runtime.pi,
+        credentialEnvironment: lock.definition.settings.defaultProvider ? keyBinding(lock.definition) : undefined, configuration: effective };
     };
     session.bindExtensions = async bindings => {
       // Pi RPC may rebind twice after new_session. Run startup hooks once per extension runtime.
@@ -187,8 +192,11 @@ export async function createLockedRuntime(options: LockedSessionOptions = {}, pr
     session.reload = async opts => {
       if (!options.dev) verifyDefinition(projectRoot, lock);
       else {
-        const next = await draftLock(projectRoot);
-        if (digest(next.model) !== digest(lock.model)) fail("RESTART_REQUIRED", "Model configuration changed. Restart pi-lock --dev to rebuild its provider runtime.");
+        const next = await draftLock(projectRoot, true);
+        if (next.model) {
+          const configured = models.getModel(next.definition.settings.defaultProvider, next.definition.settings.defaultModel);
+          if (!configured || digest(modelIdentity(configured)) !== digest(next.model)) fail("RESTART_REQUIRED", "Model configuration changed. Restart pi-lock --dev to rebuild its provider runtime.");
+        }
         lock = next; releaseRoot = materialize(projectRoot, next);
         loader.root = releaseRoot; loader.definition = next.definition;
       }

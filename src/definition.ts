@@ -76,13 +76,20 @@ function manifestEntries(root: string, base: string, entries: unknown, kind = "e
   return filterPaths(root, base, selected, entries.filter(p => p.startsWith("!") || p.startsWith("-")));
 }
 
-export function readDefinition(root: string): Definition {
+export function readDefinition(root: string, allowUnselectedModel = false): Definition {
   const config = resolve(root, ".pi");
   const settingsFile = resolve(config, "settings.json");
   if (!existsSync(settingsFile)) fail("NO_SETTINGS", "Expected .pi/settings.json. Run pi-lock init.");
   const settings = json(settingsFile);
   if (!settings || typeof settings !== "object" || Array.isArray(settings)) fail("INVALID_SETTINGS", ".pi/settings.json must contain an object.");
-  for (const k of ["defaultProvider", "defaultModel"]) if (typeof settings[k] !== "string" || !settings[k]) fail("MODEL_REQUIRED", `Set ${k} in .pi/settings.json; frozen agents never choose a fallback model.`);
+  const hasProvider = typeof settings.defaultProvider === "string" && Boolean(settings.defaultProvider);
+  const hasModel = typeof settings.defaultModel === "string" && Boolean(settings.defaultModel);
+  if ((!hasProvider || !hasModel) && !(allowUnselectedModel && !hasProvider && !hasModel)) {
+    const message = allowUnselectedModel
+      ? "Set both defaultProvider and defaultModel, or leave both unset and choose a model with /model in dev mode."
+      : "Set defaultProvider and defaultModel in .pi/settings.json; frozen agents never choose a fallback model.";
+    fail("MODEL_REQUIRED", message);
+  }
   if (settings.defaultThinkingLevel && !["off", "minimal", "low", "medium", "high", "xhigh"].includes(settings.defaultThinkingLevel)) fail("INVALID_SETTINGS", "Invalid defaultThinkingLevel.");
   for (const key of ["extensions", "skills", "prompts", "themes", "defaultTools", "packages"]) {
     if (settings[key] !== undefined && !Array.isArray(settings[key])) fail("INVALID_SETTINGS", `${key} must be an array.`);

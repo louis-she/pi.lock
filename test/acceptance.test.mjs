@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { spawn, execFileSync } from "node:child_process";
 import { setTimeout as delay } from "node:timers/promises";
 import { createServer } from "node:http";
+import { InMemoryCredentialStore } from "@earendil-works/pi-ai";
 import { createAgentSession, createLockedRuntime, lockProject, readLock, verifyDefinition, SessionManager } from "../dist/index.js";
 import { initialize } from "../dist/init.js";
 import { digest, replaceRoots } from "../dist/common.js";
@@ -466,6 +467,30 @@ test("development model selection uses native Pi APIs and persists settings for 
   } finally { await dev.dispose(); }
   assert.equal(JSON.parse(readFileSync(path)).defaultModel, "claude-opus-4-6");
   const lock = await lockProject(root); assert.equal(lock.model.id, "claude-opus-4-6");
+});
+
+test("development can start without a default model and the first Pi model selection becomes the project default", async () => {
+  const root = fixture(), path = resolve(root, ".pi/settings.json"), settings = JSON.parse(readFileSync(path));
+  delete settings.defaultProvider; delete settings.defaultModel; writeFileSync(path, JSON.stringify(settings));
+  await assert.rejects(lockProject(root), errorCode("MODEL_REQUIRED"));
+
+  const credentials = new InMemoryCredentialStore();
+  await credentials.modify("pi-lock-demo", async () => ({ type: "api_key", key: "offline-demo" }));
+  const dev = await createAgentSession(memory(root, { dev: true, credentials }));
+  try {
+    assert.ok(!dev.session.model || dev.session.model.id === "unknown");
+    assert.ok(dev.session.modelRuntime.getAvailableSnapshot().some(candidate => candidate.provider === "pi-lock-demo" && candidate.id === "demo"));
+    const model = dev.session.modelRuntime.getModel("pi-lock-demo", "demo");
+    assert.ok(model);
+    await dev.session.setModel(model, { persist: false });
+  } finally { await dev.dispose(); }
+
+  const selected = JSON.parse(readFileSync(path));
+  assert.equal(selected.defaultProvider, "pi-lock-demo");
+  assert.equal(selected.defaultModel, "demo");
+  const lock = await lockProject(root);
+  assert.equal(lock.model.provider, "pi-lock-demo");
+  assert.equal(lock.model.id, "demo");
 });
 
 test("packed npm release installs into a clean app and runs an unchanged Agent lock", { timeout: 60000 }, async () => {
