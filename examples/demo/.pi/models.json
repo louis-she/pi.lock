@@ -1,0 +1,26 @@
+{
+  "providers": {
+    "pi-lock-demo": {
+      "api": "openai-completions",
+      "baseUrl": "http://localhost:0",
+      "models": [
+        {
+          "id": "demo",
+          "name": "Offline demo",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 32768,
+          "maxTokens": 1024
+        }
+      ]
+    }
+  }
+}

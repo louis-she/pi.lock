@@ -1,0 +1,178 @@
+
+> pi-lock@0.1.0 test
+> npm run build && node --test --test-concurrency=1 test/*.test.mjs
+
+
+> pi-lock@0.1.0 build
+> tsc -p tsconfig.json
+
+TAP version 13
+# Subtest: locks latest Pi 1.3.0 and preserves the ordinary .pi layout
+ok 1 - locks latest Pi 1.3.0 and preserves the ordinary .pi layout
+  ---
+  duration_ms: 3140.56275
+  type: 'test'
+  ...
+# Subtest: ignores polluted HOME, global extensions, global skills, parent AGENTS and workspace .pi
+ok 2 - ignores polluted HOME, global extensions, global skills, parent AGENTS and workspace .pi
+  ---
+  duration_ms: 1876.803875
+  type: 'test'
+  ...
+# Subtest: relocation preserves Agent digest and actual effective configuration
+ok 3 - relocation preserves Agent digest and actual effective configuration
+  ---
+  duration_ms: 70.740375
+  type: 'test'
+  ...
+# Subtest: frozen execution rejects changed, removed and added resources before extension execution
+ok 4 - frozen execution rejects changed, removed and added resources before extension execution
+  ---
+  duration_ms: 82.91225
+  type: 'test'
+  ...
+# Subtest: frozen SDK and CLI reject behavioral overrides and thinking changes
+ok 5 - frozen SDK and CLI reject behavioral overrides and thinking changes
+  ---
+  duration_ms: 498.865125
+  type: 'test'
+  ...
+# Subtest: SDK, native print and native RPC produce the same real model requests including hooks and tool rounds
+ok 6 - SDK, native print and native RPC produce the same real model requests including hooks and tool rounds
+  ---
+  duration_ms: 3640.254041
+  type: 'test'
+  ...
+# Subtest: the real native TUI in a PTY uses the same model requests as the SDK
+ok 7 - the real native TUI in a PTY uses the same model requests as the SDK
+  ---
+  duration_ms: 2133.075334
+  type: 'test'
+  ...
+# Subtest: new, reload, fork and resume retain locked resources and session version
+ok 8 - new, reload, fork and resume retain locked resources and session version
+  ---
+  duration_ms: 112.126
+  type: 'test'
+  ...
+# Subtest: two Agents coexist in one SDK process and reload without changing cwd or environment
+ok 9 - two Agents coexist in one SDK process and reload without changing cwd or environment
+  ---
+  duration_ms: 95.374
+  type: 'test'
+  ...
+# Subtest: Git rollback restores an earlier Agent; running snapshots survive source changes
+ok 10 - Git rollback restores an earlier Agent; running snapshots survive source changes
+  ---
+  duration_ms: 183.495958
+  type: 'test'
+  ...
+# Subtest: resuming a session with a different Agent version fails explicitly
+ok 11 - resuming a session with a different Agent version fails explicitly
+  ---
+  duration_ms: 64.38275
+  type: 'test'
+  ...
+# Subtest: relative helper imports are captured; absolute paths and escaping symlinks are rejected
+ok 12 - relative helper imports are captured; absolute paths and escaping symlinks are rejected
+  ---
+  duration_ms: 30.00075
+  type: 'test'
+  ...
+# Subtest: unsupported mode-dependent extension initialization fails rather than pretending parity
+ok 13 - unsupported mode-dependent extension initialization fails rather than pretending parity
+  ---
+  duration_ms: 1783.120917
+  type: 'test'
+  ...
+# Subtest: --dev reload reads local edits; frozen running sessions remain on their immutable release
+ok 14 - --dev reload reads local edits; frozen running sessions remain on their immutable release
+  ---
+  duration_ms: 73.777791
+  type: 'test'
+  ...
+# Subtest: lock content and materialized-release corruption fail explicitly
+ok 15 - lock content and materialized-release corruption fail explicitly
+  ---
+  duration_ms: 28.5265
+  type: 'test'
+  ...
+# Subtest: installed npm resource packages and dependency files are pinned, portable, restorable and checked before use
+ok 16 - installed npm resource packages and dependency files are pinned, portable, restorable and checked before use
+  ---
+  duration_ms: 4278.392958
+  type: 'test'
+  ...
+# Subtest: MCP tool schemas are locked, tool calls work, and startup/mid-session drift is blocked
+ok 17 - MCP tool schemas are locked, tool calls work, and startup/mid-session drift is blocked
+  ---
+  duration_ms: 249.418792
+  type: 'test'
+  ...
+# Subtest: MCP codemode and deferred exposure use Pi's native discovery tools in every runtime
+ok 18 - MCP codemode and deferred exposure use Pi's native discovery tools in every runtime
+  ---
+  duration_ms: 334.142959
+  type: 'test'
+  ...
+# Subtest: headless UI does not silently approve and explicit SDK UI handlers work
+ok 19 - headless UI does not silently approve and explicit SDK UI handlers work
+  ---
+  duration_ms: 54.428166
+  type: 'test'
+  ...
+# Subtest: an unavailable locked model never falls back to another model
+ok 20 - an unavailable locked model never falls back to another model
+  ---
+  duration_ms: 4.363667
+  type: 'test'
+  ...
+# PLUGIN_STARTUP_LOG
+# Subtest: native OpenAI-compatible HTTP requests use explicit credentials and match across SDK and CLI
+ok 21 - native OpenAI-compatible HTTP requests use explicit credentials and match across SDK and CLI
+  ---
+  duration_ms: 2030.609375
+  type: 'test'
+  ...
+# Subtest: extension startup logging cannot corrupt native RPC stdout
+ok 22 - extension startup logging cannot corrupt native RPC stdout
+  ---
+  duration_ms: 1789.639083
+  type: 'test'
+  ...
+# > pi-lock@0.1.0 prepack
+# > node scripts/prepack.mjs
+# npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+# Subtest: native RPC new_session initializes extensions exactly once, matching SDK lifecycle
+ok 23 - native RPC new_session initializes extensions exactly once, matching SDK lifecycle
+  ---
+  duration_ms: 1871.031916
+  type: 'test'
+  ...
+# Subtest: native project context, loose skills, glob selection and resource exclusions are resolved locally
+ok 24 - native project context, loose skills, glob selection and resource exclusions are resolved locally
+  ---
+  duration_ms: 33.677542
+  type: 'test'
+  ...
+# Subtest: development model selection uses native Pi APIs and persists settings for the subsequent lock
+ok 25 - development model selection uses native Pi APIs and persists settings for the subsequent lock
+  ---
+  duration_ms: 39.928042
+  type: 'test'
+  ...
+# Subtest: packed npm release installs into a clean app and runs an unchanged Agent lock
+ok 26 - packed npm release installs into a clean app and runs an unchanged Agent lock
+  ---
+  duration_ms: 20515.918208
+  type: 'test'
+  ...
+1..26
+# tests 26
+# suites 0
+# pass 26
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 47187.046375

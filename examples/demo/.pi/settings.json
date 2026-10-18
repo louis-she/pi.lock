@@ -1,0 +1,15 @@
+{
+  "defaultProvider": "pi-lock-demo",
+  "defaultModel": "demo",
+  "defaultThinkingLevel": "off",
+  "defaultTools": [
+    "read",
+    "echo"
+  ],
+  "compaction": {
+    "enabled": false
+  },
+  "retry": {
+    "enabled": false
+  }
+}

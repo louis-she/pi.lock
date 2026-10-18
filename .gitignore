@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.pi-lock/
+*.tgz
+.DS_Store
+__pycache__/
+npm-shrinkwrap.json
