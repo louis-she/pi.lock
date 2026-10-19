@@ -1,52 +1,59 @@
 # pi.lock
 
-Use one Pi agent from the terminal, RPC, or the SDK with the same project configuration and resources. Commit `pi.lock` with your code to deploy or roll back the agent through Git.
+Build a Pi agent locally, lock its behavior with `pi.lock`, then deploy or roll it back with your application through Git. Use Pi's native project configuration and TUI while developing; the SDK and RPC use the same locked agent in production.
 
-Requires Node.js **22.19+** and supports Pi **1.3.0**.
+Requires Node.js **22.19+**. Supports Pi **1.3.0**.
 
-## Install and configure
+## Install
 
 ```sh
 npm install pi.lock
-npx pi-lock init --provider deepseek --model deepseek-chat
 ```
 
-Set your provider API key, for example `DEEPSEEK_API_KEY`. If you already have `.pi/settings.json`, keep it and skip `init`.
+## Build and test your agent locally
 
-Tune the agent in development mode. Edit its instructions, skills, or extensions under `.pi/` as needed:
+For a new agent, initialize a normal project-local Pi configuration. If `.pi/settings.json` already exists, keep using it and skip `init`:
 
 ```sh
+npx pi-lock init --provider deepseek --model deepseek-chat
+export DEEPSEEK_API_KEY="your-api-key"
 npx pi-lock --dev
 ```
 
-If no default model is configured, start anyway. Sign in with `/login` if needed, then choose a model with Pi's `/model` selector. The first selection is saved to this project's `.pi/settings.json`.
+`--dev` opens Pi's native TUI. Build the agent the way you normally would with Pi: edit `.pi/settings.json` and `.pi/SYSTEM.md`, add project skills, extensions, and prompt templates, then try real prompts. Use `/login` and `/model` if you need to choose credentials or a model in the TUI, and `/reload` after changing resources.
 
-When it is ready, record its configuration and resources in `pi.lock`:
+Keep resources in the project, such as `.pi/skills/`, `.pi/extensions/`, `.pi/prompts/`, or `.agents/skills/`. To make an agent portable, pi.lock deliberately does not load `~/.pi`, `~/.agents`, or resources from parent directories.
+
+When the agent behaves as you expect, save the tested definition:
 
 ```sh
 npx pi-lock lock
 ```
 
-## Run the agent
+Commit `.pi/`, project `.agents/skills/` if used, `pi.lock`, and the npm manifests and lockfiles. `.pi-lock/` contains local sessions, credentials, and runtime snapshots. `pi-lock init` adds `.pi-lock/` to `.gitignore`; if you skipped `init` for an existing project, add it there yourself.
 
-The default command opens Pi's native TUI. You can also send a one-shot prompt or use Pi's RPC protocol:
+## Deploy and roll back
+
+Deploy the Git commit containing the agent and install its pinned dependencies:
 
 ```sh
-npx pi-lock
-npx pi-lock -p "Summarize these files"
-npx pi-lock --mode rpc
+npm ci
+npx --no-install pi-lock sync --frozen
+npx --no-install pi-lock verify
 ```
 
-Normal mode is frozen: if locked files, dependencies, model settings, or tool schemas change, pi.lock reports an error. Make changes with `--dev`, then run `lock` again.
+To roll back, deploy the earlier Git commit, including its `pi.lock` and npm lockfiles, then run the same commands. A session belongs to one agent version: resume it with the matching release or start a new session. Rolling back the agent does not undo external side effects from earlier tool calls.
 
-## Use it from the SDK
+## Use the same agent from an application
+
+The agent definition and `pi.lock` stay the same; only the entry point changes. In an SDK host, provide the agent project and task workspace explicitly:
 
 ```ts
 import { createAgentSession } from "pi.lock";
 
 const agent = await createAgentSession({
-  projectRoot: "/app/my-agent", // Directory containing .pi/ and pi.lock
-  cwd: "/data/current-task",  // Working directory for this task
+  projectRoot: "/app/my-agent",
+  cwd: "/data/current-task",
   apiKey: process.env.DEEPSEEK_API_KEY,
 });
 
@@ -58,35 +65,10 @@ try {
 }
 ```
 
-`projectRoot` selects the agent definition; `cwd` selects the task's working directory. Both can be omitted when running from the agent project directory. The returned session is Pi's native `AgentSession`.
-
-## Keep the agent with your project
-
-Commit the agent definition, `pi.lock`, and npm lockfiles to Git:
-
-```text
-my-agent/
-├── .pi/
-│   ├── settings.json
-│   ├── SYSTEM.md
-│   ├── extensions/
-│   ├── skills/
-│   └── prompts/
-├── pi.lock
-├── package.json
-└── package-lock.json
-```
-
-The project root's `AGENTS.md` and project-local `.agents/skills/` are included. pi.lock does not load `~/.pi`, `~/.agents`, or resources from parent directories. Local sessions, credentials, and runtime snapshots go in `.pi-lock/` and should not be committed.
-
-For deployment, install the versions recorded by your package lockfile and verify the agent before starting it:
+To integrate through Pi's JSONL RPC protocol, launch the same project with:
 
 ```sh
-npm ci
-npx --no-install pi-lock sync --frozen
-npx --no-install pi-lock verify
+npx --no-install pi-lock --mode rpc
 ```
 
-To roll back, check out the earlier Git commit and install that commit's dependency versions. Each running session remains bound to its agent version.
-
-For extension, MCP, and compatibility details, see the [architecture notes](docs/architecture.md). Test coverage and environment limits are in the [acceptance report](docs/acceptance.md).
+For extension, MCP, and compatibility details, see the [architecture notes](docs/architecture.md). The [acceptance report](docs/acceptance.md) describes tested behavior and environment limits.
