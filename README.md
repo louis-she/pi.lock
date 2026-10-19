@@ -15,12 +15,11 @@ npm install pi.lock
 For a new agent, initialize a normal project-local Pi configuration. If `.pi/settings.json` already exists, keep using it and skip `init`:
 
 ```sh
-npx pi-lock init --provider deepseek --model deepseek-chat
-export DEEPSEEK_API_KEY="your-api-key"
+npx pi-lock init
 npx pi-lock --dev
 ```
 
-`--dev` opens Pi's native TUI. Build the agent the way you normally would with Pi: edit `.pi/settings.json` and `.pi/SYSTEM.md`, add project skills, extensions, and prompt templates, then try real prompts. Use `/login` and `/model` if you need to choose credentials or a model in the TUI, and `/reload` after changing resources.
+`--dev` opens Pi's native TUI. Sign in with `/login` and choose a provider and model with `/model`. Then build the agent the way you normally would with Pi: edit `.pi/settings.json` and `.pi/SYSTEM.md`, add project skills, extensions, and prompt templates, and try real prompts. Use `/reload` after changing resources.
 
 Keep resources in the project, such as `.pi/skills/`, `.pi/extensions/`, `.pi/prompts/`, or `.agents/skills/`. To make an agent portable, pi.lock deliberately does not load `~/.pi`, `~/.agents`, or resources from parent directories.
 
