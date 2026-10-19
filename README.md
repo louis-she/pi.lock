@@ -55,13 +55,14 @@ To roll back, deploy the earlier Git commit, including its `pi.lock` and npm loc
 
 The project and `pi.lock` stay the same; only the entry point changes. For an SDK host, select the agent project and task workspace:
 
+The provider and model come from the agent project's `.pi/settings.json`. Credentials are read from that provider's environment variable (for example, `OPENAI_API_KEY` or `DEEPSEEK_API_KEY`). The optional `apiKey` argument is assigned to the locked provider; it does not select one.
+
 ```ts
 import { createAgentSession } from "pi.lock";
 
 const agent = await createAgentSession({
   projectRoot: "/app/my-agent",
   cwd: "/data/current-task",
-  apiKey: process.env.DEEPSEEK_API_KEY,
 });
 
 try {
