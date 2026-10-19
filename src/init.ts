@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { atomicJson, fail } from "./common.js";
 
@@ -32,7 +32,4 @@ export function initialize(projectRoot: string, options: { demo?: boolean; provi
     mkdirSync(resolve(projectRoot, ".pi/prompts"), { recursive: true });
     writeFileSync(resolve(projectRoot, ".pi/prompts/hello.md"), "---\ndescription: Try the same agent through every interface.\n---\nSay hello using the echo tool. $ARGUMENTS\n");
   }
-  const ignore = resolve(projectRoot, ".gitignore");
-  const existing = existsSync(ignore) ? readFileSync(ignore, "utf8") : "";
-  if (!existing.split("\n").includes(".pi-lock/")) writeFileSync(ignore, existing + (existing.endsWith("\n") || !existing ? "" : "\n") + ".pi-lock/\n");
 }

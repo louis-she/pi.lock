@@ -2,6 +2,10 @@
 
 Acceptance date: 2026-10-18 (Asia/Shanghai). Project and npm package: `pi.lock@0.1.0`. Supported Pi version: **1.3.0**.
 
+## Runtime-store follow-up — 2026-10-19
+
+`npm test` passed **28 tests, 0 failures** after moving runtime data to `~/.pi-lock/`. The acceptance suite verifies that sessions are stored outside the project, projects have isolated mutable state, and identical `agentDigest` snapshots are shared. The npm build ran as part of the test command.
+
 The package identifier and SDK self-reference were updated for publication as `pi.lock`; the CLI command remains `pi-lock`.
 
 ## Results

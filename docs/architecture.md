@@ -1,6 +1,6 @@
 # pi.lock architecture
 
-The project and npm package are named **pi.lock**. The CLI command remains `pi-lock`; the SDK imports from `pi.lock`; the Agent lockfile is also `pi.lock`; local runtime state lives in `.pi-lock/`.
+The project and npm package are named **pi.lock**. The CLI command remains `pi-lock`; the SDK imports from `pi.lock`; the Agent lockfile is also `pi.lock`; runtime data lives outside the project under `~/.pi-lock/` by default (`PI_LOCK_HOME` overrides it).
 
 ## One construction path
 
@@ -18,7 +18,7 @@ The runtime identity hashes compiled pi-lock JavaScript and the installed produc
 
 ## Execution and immutability
 
-Frozen startup checks both the installed implementation and current project inventory against pi.lock. It materializes ordinary files in `.pi-lock/releases/<agentDigest>` and verifies them before executing extensions. That snapshot, not the source tree, supplies lazy Skill/template reads and relative imports. Changing or checking out source files therefore does not switch an existing session's instruction files.
+Frozen startup checks both the installed implementation and current project inventory against pi.lock. It materializes ordinary files in `~/.pi-lock/releases/<agentDigest>` and verifies them before executing extensions. Identical agent digests share this immutable cache across projects. Sessions, credentials, and Pi UI state live under `~/.pi-lock/projects/<projectKey>/state/`, where the project key is derived from the canonical project path. That snapshot, not the source tree, supplies lazy Skill/template reads and relative imports. Changing or checking out source files therefore does not switch an existing session's instruction files.
 
 Frozen reload verifies source before reinitializing the locked snapshot. Developer reload intentionally creates a new snapshot from current project resources. Provider/model definition changes during development require a restart; ordinary local prompt/Skill/extension reloads preserve Pi's normal `/reload` workflow.
 
@@ -30,7 +30,7 @@ SettingsManager is in memory in frozen mode. Developer writes use a custom stora
 
 The custom ResourceLoader never walks parent context directories or user-global resource locations. Extension compilation disables filesystem cache and tsconfig path discovery; Pi and TypeBox imports are mapped to the pinned host modules. Additional resources returned by `resources_discover` are rejected unless first declared as project resources and locked.
 
-No process-global environment or cwd changes are made by the SDK. The standalone CLI sets Pi's process-level paths before importing Pi so the native TUI's remaining getAgentDir calls target `.pi-lock/state/ui`. This is deliberately confined to the CLI process.
+No process-global environment or cwd changes are made by the SDK. The standalone CLI sets Pi's process-level paths before importing Pi so the native TUI's remaining getAgentDir calls target the project's `~/.pi-lock/.../state/ui` directory. This is deliberately confined to the CLI process.
 
 This is a reproducibility contract for cooperating host code and compatible extensions. Unrestricted JavaScript, filesystem tools, shell commands and external services retain their normal effects. It is not a sandbox or a proof that arbitrary dynamically generated code has no ambient dependencies.
 

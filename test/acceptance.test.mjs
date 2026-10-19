@@ -11,11 +11,18 @@ import { InMemoryCredentialStore } from "@earendil-works/pi-ai";
 import { createAgentSession, createLockedRuntime, lockProject, readLock, verifyDefinition, SessionManager } from "../dist/index.js";
 import { initialize } from "../dist/init.js";
 import { digest, replaceRoots } from "../dist/common.js";
+import { runtimePaths } from "../dist/paths.js";
 
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const cli = resolve(repo, "dist/cli.js");
 const scratch = realpathSync(mkdtempSync(resolve(tmpdir(), "pi-lock-acceptance-")));
-test.after(() => rmSync(scratch, { recursive: true, force: true }));
+const previousPiLockHome = process.env.PI_LOCK_HOME;
+process.env.PI_LOCK_HOME = resolve(scratch, "runtime-home");
+test.after(() => {
+  rmSync(scratch, { recursive: true, force: true });
+  if (previousPiLockHome === undefined) delete process.env.PI_LOCK_HOME;
+  else process.env.PI_LOCK_HOME = previousPiLockHome;
+});
 let n = 0;
 function fixture({ trace = false } = {}) {
   const root = resolve(scratch, `agent-${++n}`);
@@ -52,7 +59,7 @@ async function waitFor(fn, label, timeout = 15000) {
 function traces(root) {
   const path = resolve(root, "requests.jsonl");
   if (!existsSync(path)) return [];
-  const release = resolve(root, ".pi-lock/releases", readLock(root).agentDigest);
+  const release = resolve(runtimePaths(root).releases, readLock(root).agentDigest);
   return readFileSync(path, "utf8").trim().split("\n").filter(Boolean).map(s => {
     const cleaned = JSON.parse(s, (k, v) => ["timestamp", "durationMs", "usage", "sessionId", "responseId"].includes(k) ? undefined : v);
     return replaceRoots(cleaned, [[release, "<AGENT>"], [root, "<WORKSPACE>"]]);
@@ -115,6 +122,24 @@ test("relocation preserves Agent digest and actual effective configuration", asy
     assert.deepEqual(a.inspect().configuration, b.inspect().configuration);
     await b.session.prompt("hello");
   } finally { await a.dispose(); await b.dispose(); }
+});
+
+test("runtime state lives in the home store, shares snapshots, and isolates projects", async () => {
+  const one = fixture(), two = fixture();
+  const first = await lockProject(one), second = await lockProject(two);
+  const a = runtimePaths(one), b = runtimePaths(two);
+  assert.equal(first.agentDigest, second.agentDigest);
+  assert.equal(resolve(a.releases, first.agentDigest), resolve(b.releases, second.agentDigest));
+  assert.notEqual(a.project, b.project);
+  assert.ok(existsSync(resolve(a.releases, first.agentDigest, ".complete")));
+  assert.ok(!existsSync(resolve(one, ".pi-lock")));
+
+  const session = await createAgentSession({ projectRoot: one, cwd: one });
+  try {
+    assert.ok(session.session.sessionFile.startsWith(a.sessions));
+    await session.session.prompt("persist this session");
+  } finally { await session.dispose(); }
+  assert.ok(!existsSync(resolve(one, ".pi-lock")));
 });
 
 test("frozen execution rejects changed, removed and added resources before extension execution", async () => {
@@ -222,7 +247,7 @@ test("two Agents coexist in one SDK process and reload without changing cwd or e
 test("Git rollback restores an earlier Agent; running snapshots survive source changes", async () => {
   const root = fixture();
   const git = (...args) => execFileSync("git", ["-c", "user.name=Pi Lock Acceptance", "-c", "user.email=pi-lock@example.invalid", ...args], { cwd: root, encoding: "utf8" }).trim();
-  git("init", "-q"); const v1 = await lockProject(root); git("add", ".pi", "pi.lock", ".gitignore"); git("commit", "-qm", "Agent v1"); const commit = git("rev-parse", "HEAD");
+  git("init", "-q"); const v1 = await lockProject(root); git("add", ".pi", "pi.lock"); git("commit", "-qm", "Agent v1"); const commit = git("rev-parse", "HEAD");
   const old = await createAgentSession(memory(root));
   try {
     writeFileSync(resolve(root, ".pi/SYSTEM.md"), "Agent version two."); const v2 = await lockProject(root);
@@ -284,8 +309,10 @@ test("lock content and materialized-release corruption fail explicitly", async (
   writeFileSync(path, JSON.stringify(changed));
   await assert.rejects(createAgentSession(memory(root)), errorCode("LOCK_CORRUPT"));
   writeFileSync(path, original);
-  appendFileSync(resolve(root, ".pi-lock/releases", lock.agentDigest, ".pi/SYSTEM.md"), "tampered cache");
+  const release = resolve(runtimePaths(root).releases, lock.agentDigest);
+  appendFileSync(resolve(release, ".pi/SYSTEM.md"), "tampered cache");
   await assert.rejects(createAgentSession(memory(root)), errorCode("SNAPSHOT_CORRUPT"));
+  rmSync(release, { recursive: true, force: true });
   rmSync(path);
   await assert.rejects(createAgentSession(memory(root)), errorCode("LOCK_MISSING"));
 });

@@ -3,6 +3,7 @@ import { dirname, resolve } from "node:path";
 import { atomicJson, digest, fail, FORMAT, hash, inside, json, PI_VERSION } from "./common.js";
 import { readDefinition, runtimeIdentity, type Definition } from "./definition.js";
 import { modelIdentity, modelRuntime, selectedModel } from "./model.js";
+import { runtimePaths } from "./paths.js";
 
 export interface AgentLock {
   lockfileVersion: 1;
@@ -54,7 +55,8 @@ export function verifySourcesBeforeInstall(root: string, lock: AgentLock): void 
   }
 }
 export function materialize(root: string, lock: AgentLock): string {
-  const release = resolve(root, ".pi-lock/releases", lock.agentDigest);
+  const paths = runtimePaths(root);
+  const release = resolve(paths.releases, lock.agentDigest);
   if (existsSync(resolve(release, ".complete"))) { verifySnapshot(release, lock); return release; }
   mkdirSync(dirname(release), { recursive: true });
   const staging = `${release}.${process.pid}.${Math.random().toString(36).slice(2)}.tmp`;

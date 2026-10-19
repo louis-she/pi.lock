@@ -1,5 +1,7 @@
 # pi.lock
 
+<p align="center"><img src="docs/assets/pi-lock-logo.png" width="180" alt="pi.lock logo"></p>
+
 A portable Pi agent you can version and roll back with Git.
 
 Requires Node.js **22.19+**. Supports Pi **1.3.0**.
@@ -33,7 +35,7 @@ Commit the project as you normally would:
 git add -A
 ```
 
-`init` adds `.pi-lock/` to `.gitignore`; it holds local sessions, credentials, and runtime snapshots. If you skipped `init`, add `.pi-lock/` to `.gitignore` before committing.
+Runtime data lives in `~/.pi-lock/`, outside the project. Set `PI_LOCK_HOME` to use another location.
 
 Frozen runs reject changes to locked files, dependencies, model settings, or tool schemas. Edit in `--dev` and run `lock` again to update the agent.
 

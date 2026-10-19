@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 // This entry intentionally imports no Pi code until its per-process paths are bound locally.
-import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
+import { copyFileSync, existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fail, findProject, json, atomicJson, LockError, PI_VERSION } from "./common.js";
+import { prepareRuntimePaths } from "./paths.js";
 
 const help = `pi-lock — Pi ${PI_VERSION}, project-local and reproducible
 
@@ -30,7 +31,7 @@ const help = `pi-lock — Pi ${PI_VERSION}, project-local and reproducible
 async function main() {
   const args = process.argv.slice(2);
   if (args.includes("--help") || args.includes("-h")) { console.log(help); return; }
-  if (args.includes("--version") || args.includes("-v")) { console.log(`pi-lock 0.1.1 (Pi ${PI_VERSION})`); return; }
+  if (args.includes("--version") || args.includes("-v")) { console.log(`pi-lock 0.1.2 (Pi ${PI_VERSION})`); return; }
   const commands = new Set(["init", "lock", "inspect", "verify", "sync"]);
   let command = commands.has(args[0]) ? args.shift()! : "run";
   const flags: Record<string, string | boolean> = {};
@@ -49,11 +50,12 @@ async function main() {
   }
   const cwd = resolve(String(flags["--cwd"] ?? process.cwd()));
   const root = command === "init" ? resolve(String(flags["--project"] ?? cwd)) : findProject(cwd, flags["--project"] as string | undefined);
-  // Pi TUI helpers still use getAgentDir(); set it before importing Pi, inside this CLI process only.
-  const uiRoot = resolve(root, ".pi-lock/state/ui");
-  mkdirSync(uiRoot, { recursive: true });
-  process.env.PI_CODING_AGENT_DIR = uiRoot;
-  process.env.PI_CODING_AGENT_SESSION_DIR = resolve(root, ".pi-lock/state/sessions");
+  // Pi TUI helpers still use getAgentDir(); bind its paths before importing Pi, inside this process only.
+  if (command !== "init") {
+    const paths = prepareRuntimePaths(root);
+    process.env.PI_CODING_AGENT_DIR = paths.ui;
+    process.env.PI_CODING_AGENT_SESSION_DIR = paths.sessions;
+  }
   process.env.PI_OFFLINE = "1";
   process.env.PI_SKIP_VERSION_CHECK = "1";
   process.env.PI_TELEMETRY = "0";

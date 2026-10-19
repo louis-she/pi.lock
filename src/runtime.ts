@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
   createAgentSession as createPiSession, createAgentSessionRuntime, SettingsManager, SessionManager,
@@ -11,6 +11,7 @@ import { digest, fail, findProject, replaceRoots } from "./common.js";
 import { readLock, verifyDefinition, verifySnapshot, materialize, draftLock, saveLock, type AgentLock } from "./lock.js";
 import { LockedResourceLoader } from "./loader.js";
 import { assertModel, keyBinding, modelIdentity, modelRuntime, selectedModel, type CredentialsOptions } from "./model.js";
+import { prepareRuntimePaths } from "./paths.js";
 
 export interface LockedSessionOptions extends CredentialsOptions {
   /** Agent definition root. Defaults to the nearest pi.lock/.pi/settings.json above cwd. */
@@ -107,10 +108,10 @@ export async function createLockedRuntime(options: LockedSessionOptions = {}, pr
   const projectRoot = findProject(cwd, options.projectRoot);
   let lock = prepared ?? (options.dev ? await draftLock(projectRoot, true) : readLock(projectRoot));
   if (!options.dev) verifyDefinition(projectRoot, lock);
+  const paths = prepareRuntimePaths(projectRoot);
   let releaseRoot = materialize(projectRoot, lock);
-  const stateDir = resolve(options.sessionDir ?? resolve(projectRoot, ".pi-lock/state/sessions", lock.agentDigest, digest(cwd).slice(0, 12)));
-  const agentDir = resolve(projectRoot, ".pi-lock/state/ui");
-  mkdirSync(agentDir, { recursive: true });
+  const stateDir = resolve(options.sessionDir ?? resolve(paths.sessions, lock.agentDigest, digest(cwd).slice(0, 12)));
+  const agentDir = paths.ui;
   const manager = options.sessionManager ?? (options.sessionFile ? SessionManager.open(resolve(options.sessionFile), stateDir, cwd) : SessionManager.create(cwd, stateDir));
   let host!: AgentSessionRuntime;
   let lastInspection: unknown;

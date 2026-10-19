@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, mkdirSync, rmSync } from "node:fs";
+import { copyFileSync, existsSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
 import { spawn } from "node:child_process";
 import { InteractiveMode, initTheme, runPrintMode, runRpcMode, SessionManager } from "@earendil-works/pi-coding-agent";
@@ -7,6 +7,7 @@ import { internalModule } from "./bridge.js";
 import { initialize } from "./init.js";
 import { createLockedRuntime, lockProject } from "./runtime.js";
 import { materialize, readLock, verifyDefinition, verifySourcesBeforeInstall } from "./lock.js";
+import { prepareRuntimePaths } from "./paths.js";
 
 async function npmCi(cwd: string) {
   await new Promise<void>((done, reject) => {
@@ -43,8 +44,7 @@ export async function execute(command: string, root: string, cwd: string, flags:
   }
   const mode = flags["--mode"] ?? ((flags["-p"] || flags["--print"]) ? "print" : "tui");
   if (!["tui", "rpc", "json", "print", "text"].includes(String(mode))) fail("ARGUMENT", `Unknown mode ${mode}.`);
-  const state = resolve(root, ".pi-lock/state");
-  mkdirSync(state, { recursive: true });
+  const state = prepareRuntimePaths(root).state;
   const { AuthStorage } = await internalModule("./core/auth-storage.js");
   const credentials = AuthStorage.create(resolve(state, "auth.json"));
   const opts: any = { projectRoot: root, cwd, credentials, dev: Boolean(flags["--dev"]), sessionFile: flags["--session"], sessionDir: flags["--session-dir"] };
