@@ -2,7 +2,7 @@
   "name": "pi.lock",
   "version": "0.1.1",
   "type": "module",
-  "description": "Project-local, reproducible Pi agents for SDK, TUI and RPC",
+  "description": "A portable Pi agent you can version and roll back with Git",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/louis-she/pi.lock.git"

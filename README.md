@@ -1,6 +1,6 @@
 # pi.lock
 
-Use Pi's native project configuration and TUI to tune an agent locally, then lock and deploy the same agent through Git. pi.lock provides one frozen runtime for the CLI, SDK, and RPC.
+A portable Pi agent you can version and roll back with Git.
 
 Requires Node.js **22.19+**. Supports Pi **1.3.0**.
 
@@ -21,13 +21,21 @@ npx pi-lock --dev
 
 `--dev` opens Pi's native TUI for this project. pi.lock loads project resources only; it does not load `~/.pi`, `~/.agents`, or resources from parent directories.
 
-When the agent is ready, create the lock:
+Now build and test your Pi agent as you normally would. When it is ready, create the lock:
 
 ```sh
 npx pi-lock lock
 ```
 
-Commit `.pi/`, project `.agents/skills/` if used, `pi.lock`, and the npm manifests and lockfiles. Frozen runs reject changes to locked files, dependencies, model settings, or tool schemas. Edit in `--dev` and run `lock` again to update the agent. `.pi-lock/` holds local sessions, credentials, and runtime snapshots. `init` adds it to `.gitignore`; if you skipped `init`, add it yourself.
+Commit the project as you normally would:
+
+```sh
+git add -A
+```
+
+`init` adds `.pi-lock/` to `.gitignore`; it holds local sessions, credentials, and runtime snapshots. If you skipped `init`, add `.pi-lock/` to `.gitignore` before committing.
+
+Frozen runs reject changes to locked files, dependencies, model settings, or tool schemas. Edit in `--dev` and run `lock` again to update the agent.
 
 ## Deploy and roll back
 
